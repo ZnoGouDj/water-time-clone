@@ -11,7 +11,7 @@ const DrinkingProgress: React.FC<Props> = ({ filledAmount, totalAmount }) => {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.progressContainer, { width: `${progress}%` }]} />
+      <View style={[styles.progressContainer, { width: `${progress > 0 ? progress : 0}%` }]} />
       <Text style={styles.text}>{`${filledAmount} / ${totalAmount}`}</Text>
     </View>
   );
