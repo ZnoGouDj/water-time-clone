@@ -2,17 +2,17 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 interface Props {
-  filledAmount: number;
-  totalAmount: number;
+  liquidConsumed: number;
+  liquidGoal: number;
 }
 
-const DrinkingProgress: React.FC<Props> = ({ filledAmount, totalAmount }) => {
-  const progress = (filledAmount / totalAmount) * 100;
+const DrinkingProgress: React.FC<Props> = ({ liquidConsumed, liquidGoal }) => {
+  const progress = (liquidConsumed / liquidGoal) * 100;
 
   return (
     <View style={styles.container}>
       <View style={[styles.progressContainer, { width: `${progress > 0 ? progress : 0}%` }]} />
-      <Text style={styles.text}>{`${filledAmount} / ${totalAmount}`}</Text>
+      <Text style={styles.text}>{`${liquidConsumed} / ${liquidGoal}`}</Text>
     </View>
   );
 };

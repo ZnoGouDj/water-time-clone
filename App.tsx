@@ -10,42 +10,57 @@ import Weight from './components/Weight';
 
 export default function App() {
   const [selectedOption, setSelectedOption] = useState('Water');
-  const [filledAmount, setFilledAmount] = useState(0);
-  const [totalAmount, setTotalAmount] = useState(2500);
+  const [liquidConsumed, setLiquidConsumed] = useState(0);
+  const [liquidGoal, setLiquidGoal] = useState(2500);
+  const [disableExerciseIcon, setDisableExerciseIcon] = useState(false);
 
   useEffect(() => {
-    const loadFilledAmount = async () => {
+    const getAsyncStorageData = async () => {
       try {
-        const savedFilledAmount = await AsyncStorage.getItem('filledAmount');
-        if (savedFilledAmount !== null) {
-          setFilledAmount(parseInt(savedFilledAmount));
+        const liquidConsumed = await AsyncStorage.getItem('liquidConsumed');
+        const liquidGoal = await AsyncStorage.getItem('liquidGoal');
+        const wasExerciseDone = await AsyncStorage.getItem('wasExerciseDone');
+        
+        if (liquidConsumed) {
+          setLiquidConsumed(+liquidConsumed)
+        }
+
+        if (liquidGoal) {
+          setLiquidGoal(+liquidGoal);
+        }
+
+        if (wasExerciseDone) {
+          setDisableExerciseIcon(true);
         }
       } catch (error) {
-        console.error('Error loading filledAmount from AsyncStorage: ', error);
+        console.error('Error getting data from AsyncStorage: ', error);
       }
-    };
+    }
 
-    loadFilledAmount();
-  }, []);
+    getAsyncStorageData();
+  }, [])
 
-  const increaseFilledAmount = (amount: number) => {
-    const newFilledAmount = filledAmount + amount;
-    setFilledAmount(newFilledAmount);
-    AsyncStorage.setItem('filledAmount', newFilledAmount.toString());
+  const increaseLiquidConsumed = (amount: number) => {
+    const newLiquidConsumed = liquidConsumed + amount;
+    setLiquidConsumed((newLiquidConsumed));
+    AsyncStorage.setItem('liquidConsumed', newLiquidConsumed.toString());
   };
 
-  const increaseTotalAmount = async () => {
-    try {
-      const wasIncreased = await AsyncStorage.getItem('wasIncreased');
+  const increaseLiquidGoal = async () => {
+    const wasExerciseDone = await AsyncStorage.getItem('wasExerciseDone');
 
-      if (wasIncreased === 'true') {
-        return;
-      } else {
-        AsyncStorage.setItem('wasIncreased', 'true');
-        setTotalAmount((prev) => prev + 500);
+    if (wasExerciseDone) {
+      return;
+    } else {
+      try {
+        const newLiquidGoal = liquidGoal + 500;
+        setLiquidGoal(newLiquidGoal);
+        setDisableExerciseIcon(true);
+        AsyncStorage.setItem('liquidGoal', newLiquidGoal.toString());
+        AsyncStorage.setItem('wasExerciseDone', 'true');
+      } catch (error) {
+        console.error('Error increasing totalAmount: ', error);
       }
-    } catch (error) {
-      console.error('Error increasing totalAmount: ', error);
     }
   }
 
@@ -59,9 +74,10 @@ export default function App() {
       const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
       const msUntilMidnight = midnight.getTime() - now.getTime();
       setTimeout(() => {
-        setFilledAmount(0);
-        AsyncStorage.setItem('filledAmount', '0');
-        AsyncStorage.setItem('wasIncreased', 'false');
+        setLiquidConsumed(0);
+        AsyncStorage.removeItem('liquidConsumed');
+        AsyncStorage.removeItem('liquidGoal');
+        AsyncStorage.removeItem('wasExerciseDone');
       }, msUntilMidnight);
     };
 
@@ -70,19 +86,19 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <DrinkingProgress filledAmount={filledAmount} totalAmount={totalAmount}/>
+      <DrinkingProgress liquidConsumed={liquidConsumed} liquidGoal={liquidGoal}/>
       <ToggleMenu onOptionChange={handleOptionChange} />
       <View style={styles.centeredContent}>
         {selectedOption === 'Water' && (
-          <WaterDrop onPress={() => increaseFilledAmount(200)} />
+          <WaterDrop onPress={() => increaseLiquidConsumed(200)} />
         )}
         {selectedOption === 'Coffee' && (
-          <Coffee onPress={() => increaseFilledAmount(-100)} />
+          <Coffee onPress={() => increaseLiquidConsumed(-100)} />
         )}
         {selectedOption === 'Tea' && (
-          <Tea onPress={() => increaseFilledAmount(-100)} />
+          <Tea onPress={() => increaseLiquidConsumed(-100)} />
         )}
-        <Weight onPress={() => increaseTotalAmount()} />
+        <Weight onPress={() => increaseLiquidGoal()} isDisabled={disableExerciseIcon} />
       </View>
     </View>
   );
