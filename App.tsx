@@ -15,6 +15,10 @@ export default function App() {
   const [disableExerciseIcon, setDisableExerciseIcon] = useState(false);
 
   useEffect(() => {
+    console.log('hello world')
+  }, [])
+
+  useEffect(() => {
     const getAsyncStorageData = async () => {
       try {
         const liquidConsumed = await AsyncStorage.getItem('liquidConsumed');
